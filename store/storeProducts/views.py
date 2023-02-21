@@ -1,7 +1,10 @@
-from django.shortcuts import render
+from django.shortcuts import render, HttpResponseRedirect
 
+from .models import Product, ProductCategory, Basket
+import sys
+sys.path.append('/Users/erlankarabaliyev/Desktop/spring kbtu/django/djangoProject/store/users')
+from users .models import User
 
-from .models import Product, ProductCategory
 # Create your views here.
 
 def index(request):
@@ -20,4 +23,27 @@ def products(request):
         'categories' : ProductCategory.objects.all(),
     }
     return render(request, 'storeProducts/products.html', context)
+
+
+def basket_add(request, product_id):
+    product = Product.objects.get(id=product_id)
+    baskets = Basket.objects.filter(user=request.user, products=product)
+
+    if not baskets.exists():
+        Basket.objects.create(user=request.user, products=product, quantity=1)
+    else:
+        basket = baskets.first()
+        basket.quantity += 1
+        basket.save()
+    return HttpResponseRedirect(request.META['HTTP_REFERER'])
+
+
+def basket_remove(request, basket_id):
+    basket = Basket.objects.get(id=basket_id)
+    basket.delete()
+    return HttpResponseRedirect(request.META['HTTP_REFERER'])
+
+
+
+
 
